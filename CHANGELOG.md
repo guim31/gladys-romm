@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-30
+
 ### Added
 
 - RomM in Gladys: one device per server with online, platforms, games, library
@@ -22,3 +24,6 @@ the notes of the version's GitHub Release.
 - Dashboard widget: games, platforms, games without metadata, scan in progress,
   latest games added and a Scan button, each block can be hidden.
 - Texts and documentation in English, French, German and Spanish.
+
+[Unreleased]: https://github.com/guim31/gladys-romm/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-romm/releases/tag/v1.0.0
