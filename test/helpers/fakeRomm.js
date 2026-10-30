@@ -120,7 +120,9 @@ export class FakeRomm {
       is_identifying: rom.identifying,
       is_identified: rom.identified,
       is_unidentified: !rom.identified,
-      created_at: new Date(rom.created).toISOString().replace(/\.\d+Z$/, '+00:00'),
+      created_at: Number.isFinite(rom.created)
+        ? new Date(rom.created).toISOString().replace(/\.\d+Z$/, '+00:00')
+        : null,
     };
   }
 

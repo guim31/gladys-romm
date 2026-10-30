@@ -301,3 +301,82 @@ test('Test the connection: a report in four languages', async (t) => {
   const down = await w.hub.testConnection();
   assert.match(down.de, /antwortet nicht/);
 });
+
+test('a scheduled scan run again under the same job id is announced again', async (t) => {
+  const w = await world(t);
+  const id = w.romm.scanTask({ status: 'finished' });
+  await w.hub.pollAll();
+  assert.equal(events(w, 'scan_finished').length, 1);
+  w.clock.advance(24 * 60 * 60_000);
+  const task = w.romm.tasks.find((item) => item.task_id === id);
+  task.ended_at = new Date(w.clock.now()).toISOString();
+  await w.hub.pollAll();
+  await w.hub.pollAll();
+  assert.equal(events(w, 'scan_finished').length, 2);
+});
+
+test('RomM reinstalled at the same address: its new games are announced', async (t) => {
+  const romm = defaultRomm();
+  for (let i = 0; i < 20; i += 1) {
+    romm.add(`Old ${i}`, 'nes');
+  }
+  const w = await world(t, { romm });
+  romm.roms = [];
+  romm.nextId = 1;
+  await w.hub.pollAll();
+  assert.deepEqual(events(w, 'game_added'), [], 'the reinstall itself is not news');
+  romm.add('Fresh install', 'gba');
+  await w.hub.pollAll();
+  assert.deepEqual(
+    events(w, 'game_added').map((event) => event.data.name),
+    ['Fresh install'],
+  );
+});
+
+test('a game "identifying" without a creation date is not waited for', async (t) => {
+  const w = await world(t);
+  const id = w.romm.add('No date', 'nes', { identifying: true });
+  w.romm.roms.find((rom) => rom.id === id).created = Number.NaN;
+  await w.hub.pollAll();
+  assert.equal(events(w, 'game_added').length, 1);
+});
+
+test('another address seeds again; a new token on the same server keeps the state', async (t) => {
+  const w = await world(t);
+  w.romm.add('Before', 'nes');
+  await w.hub.reconfigure({ ...w.hub.config, token: '', username: USERNAME, password: PASSWORD });
+  assert.deepEqual(
+    events(w, 'game_added').map((event) => event.data.name),
+    ['Before'],
+    'same server: the new game is announced once, nothing seeded again',
+  );
+  assert.equal(w.hub.saved.seeded, true);
+  await w.hub.reconfigure({ ...w.hub.config, url: 'http://192.0.2.31:8080' });
+  assert.equal(w.hub.saved.url, 'http://192.0.2.31:8080');
+  assert.equal(w.hub.saved.seeded, false, 'another server: its games will not be news');
+  assert.equal(events(w, 'game_added').length, 1);
+});
+
+test('credentials removed: no device, the status asks for them', async (t) => {
+  const w = await world(t);
+  await w.hub.reconfigure({ ...w.hub.config, token: '' });
+  assert.deepEqual(w.fake.discoveredDevices, []);
+  assert.match(w.fake.connectionStatus.message.en, /client API token/);
+  assert.equal(w.hub.pollTimer, null);
+});
+
+test('Gladys reconnects: device, states and status sent again', async (t) => {
+  const w = await world(t);
+  const states = w.fake.states.length;
+  await w.hub.resync(w.hub.config);
+  assert.ok(w.fake.states.length >= states + 6, 'every state again');
+  assert.deepEqual(w.fake.connectionStatus, { connected: true });
+});
+
+test('Test the connection during a reconfiguration answers a message, not an error', async (t) => {
+  const w = await world(t);
+  w.hub.server = w.hub.emptyServer();
+  w.hub.refresh = async () => {};
+  const report = await w.hub.testConnection();
+  assert.equal(report.fr, 'RomM ne répond pas.');
+});

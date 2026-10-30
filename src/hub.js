@@ -324,10 +324,19 @@ export class RommHub {
     let added = [];
     let finished = [];
 
+    const maxId = Math.max(0, ...reading.latest.map((rom) => rom.id));
+    if (saved.seeded && maxId < saved.seedId) {
+      // The ids went back (RomM reinstalled with a new database, or the newest
+      // games deleted): start again from what is there, or the new games
+      // numbered below the old ones would never be announced.
+      logger.debug(`RomM: game ids went back (${saved.seedId} → ${maxId}), seeding again`);
+      saved.seeded = false;
+    }
     if (!saved.seeded) {
       // First reading of this server: what is there is not news.
       saved.seeded = true;
-      saved.seedId = Math.max(0, ...reading.latest.map((rom) => rom.id));
+      saved.seedId = maxId;
+      saved.known = [];
     } else {
       const known = new Set(saved.known);
       // Newest first in the answer: announced oldest first.
@@ -336,8 +345,10 @@ export class RommHub {
           (rom) =>
             rom.id > saved.seedId &&
             !known.has(rom.id) &&
+            // Without a creation date, a game "identifying" is not waited for.
             (!rom.identifying ||
-              (rom.created !== null && now - rom.created >= this.timings.identifyingMs)),
+              rom.created === null ||
+              now - rom.created >= this.timings.identifyingMs),
         )
         .reverse();
       saved.known = [...added.map((rom) => rom.id).reverse(), ...saved.known].slice(0, KNOWN_SIZE);
@@ -345,18 +356,18 @@ export class RommHub {
 
     if (reading.scans !== null) {
       const ended = reading.scans.filter((task) => !RUNNING_STATES.has(task.status));
+      // A run is its job id and its end: a scheduled job run again under the
+      // same id is another scan.
+      const runKey = (task) => `${task.id}|${task.ended ?? ''}`;
       if (saved.scansSeeded) {
         const seen = new Set(saved.scans);
         // Newest first in the answer: announced oldest first.
         finished = ended
-          .filter((task) => task.status === 'finished' && !seen.has(task.id))
+          .filter((task) => task.status === 'finished' && !seen.has(runKey(task)))
           .reverse();
       }
       saved.scansSeeded = true;
-      saved.scans = [...new Set([...ended.map((task) => task.id), ...saved.scans])].slice(
-        0,
-        SCANS_SIZE,
-      );
+      saved.scans = [...new Set([...ended.map(runKey), ...saved.scans])].slice(0, SCANS_SIZE);
     }
 
     // On disk before the events: a crash in between announces nothing twice.
@@ -627,11 +638,13 @@ export class RommHub {
     await this.refresh();
     const message = {};
     for (const [language, text] of Object.entries(REPORT_TEXT)) {
-      if (!this.client || this.error) {
-        message[language] = pick(this.connectionStatus().message, language);
+      const totals = this.totals();
+      if (!this.client || this.error || !this.server.reachable || !totals) {
+        // Reconfigured during the reading: the status says what is known.
+        const status = this.connectionStatus().message;
+        message[language] = status ? pick(status, language) : SUMMARY_TEXT[language].down;
         continue;
       }
-      const totals = this.totals();
       message[language] = [
         text.ok(this.server.version),
         text.games(totals.games, totals.sizeGb),
