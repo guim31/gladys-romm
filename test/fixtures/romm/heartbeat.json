@@ -1,0 +1,25 @@
+{
+  "SYSTEM": {
+    "VERSION": "5.4.1",
+    "GIT_BRANCH": null,
+    "SHOW_SETUP_WIZARD": false
+  },
+  "FILESYSTEM": {
+    "FS_PLATFORMS": [
+      "snes",
+      "gba",
+      "nes"
+    ],
+    "TITLE_ID_EXTRACTION_ENABLED": true
+  },
+  "TASKS": {
+    "ENABLE_SCHEDULED_RESCAN": false,
+    "SCHEDULED_RESCAN_CRON": "0 3 * * *",
+    "ENABLE_SCHEDULED_UPDATE_SWITCH_TITLEDB": false,
+    "SCHEDULED_UPDATE_SWITCH_TITLEDB_CRON": "0 4 * * *",
+    "ENABLE_SCHEDULED_UPDATE_LAUNCHBOX_METADATA": false,
+    "SCHEDULED_UPDATE_LAUNCHBOX_METADATA_CRON": "0 4 * * *",
+    "ENABLE_SCHEDULED_CONVERT_IMAGES_TO_WEBP": false,
+    "SCHEDULED_CONVERT_IMAGES_TO_WEBP_CRON": "0 4 * * *"
+  }
+}
