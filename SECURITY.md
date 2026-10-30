@@ -30,6 +30,19 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+What the integration handles:
+
+- The client API token, or the username and password of RomM, stored by Gladys
+  in the configuration of the integration. They are sent only to the RomM
+  server you configured, in the `Authorization` header (Bearer or HTTP Basic),
+  never in a URL and never in the logs. Prefer a token limited to the scopes
+  **View ROMs**, **View platforms** and **Run tasks**.
+- Under `/data`: the address of the server, and the ids of the games and scans
+  already announced. No secret.
+- Network: HTTP(S) requests to the RomM server only. The only write is a scan
+  of the library, when the user asks for it. No inbound port.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+and RomM itself (see its
+[security policy](https://github.com/rommapp/romm/security/policy)).

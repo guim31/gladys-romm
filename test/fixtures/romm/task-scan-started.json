@@ -1,0 +1,27 @@
+{
+  "task_key": null,
+  "task_name": "Quick Scan",
+  "task_id": "42db0a82-b924-4d3d-b5c2-7afb04784d6e",
+  "status": "started",
+  "created_at": "2026-10-30T12:06:55.087805+00:00",
+  "enqueued_at": "2026-10-30T12:06:55.090171+00:00",
+  "started_at": "2026-10-30T12:06:55.117283+00:00",
+  "ended_at": null,
+  "task_type": "scan",
+  "meta": {
+    "scan_stats": {
+      "total_platforms": 3,
+      "total_roms": 3,
+      "scanned_platforms": 0,
+      "new_platforms": 0,
+      "identified_platforms": 0,
+      "scanned_roms": 0,
+      "new_roms": 0,
+      "identified_roms": 0,
+      "scanned_firmware": 0,
+      "new_firmware": 0,
+      "updated_roms": 0,
+      "new_files": 0
+    }
+  }
+}

@@ -1,177 +1,707 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "RomM",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "RomM in Gladys: games and platforms of your retro library, new games, scans.",
+    "fr": "RomM dans Gladys : jeux et plateformes de votre ludothèque rétro, nouveaux jeux, scans.",
+    "de": "RomM in Gladys: Spiele und Plattformen deiner Retro-Bibliothek, neue Spiele, Scans.",
+    "es": "RomM en Gladys: juegos y plataformas de su biblioteca retro, juegos nuevos, escaneos."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
+  "docker_image": "ghcr.io/guim31/gladys-romm:1.0.0",
   "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-romm/main/cover.png",
+  "categories": ["leisure", "servers"],
+  "transports": ["local"],
   "config_schema": [
     {
-      "key": "intro",
+      "key": "server",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "RomM server",
+        "fr": "Serveur RomM",
+        "de": "RomM-Server",
+        "es": "Servidor RomM"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Address of RomM and how to sign in. The integration reads the library; it only starts a scan when you ask for it.",
+        "fr": "Adresse de RomM et identifiants. L'intégration lit la bibliothèque ; elle ne lance un scan que si vous le demandez.",
+        "de": "Adresse von RomM und Anmeldung. Die Integration liest die Bibliothek; sie startet einen Scan nur, wenn du es verlangst.",
+        "es": "Dirección de RomM y acceso. La integración lee la biblioteca; solo lanza un escaneo cuando usted lo pide."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://romm.app",
+          "label": {
+            "en": "RomM website",
+            "fr": "Site de RomM",
+            "de": "Website von RomM",
+            "es": "Sitio web de RomM"
+          }
+        },
+        {
+          "url": "https://docs.romm.app",
+          "label": {
+            "en": "RomM documentation",
+            "fr": "Documentation de RomM",
+            "de": "Dokumentation von RomM",
+            "es": "Documentación de RomM"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "url",
+      "type": "string",
+      "label": {
+        "en": "Address",
+        "fr": "Adresse",
+        "de": "Adresse",
+        "es": "Dirección"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
-    },
-    {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
       "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+        "en": "IP address or name of the server, with the port of the web interface (8080 by default).",
+        "fr": "Adresse IP ou nom du serveur, avec le port de l'interface web (8080 par défaut).",
+        "de": "IP-Adresse oder Name des Servers, mit dem Port der Weboberfläche (standardmäßig 8080).",
+        "es": "Dirección IP o nombre del servidor, con el puerto de la interfaz web (8080 por defecto)."
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
-    },
-    {
-      "key": "unit",
-      "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "placeholder": {
+        "en": "e.g. 192.168.1.2:8080",
+        "fr": "ex. 192.168.1.2:8080",
+        "de": "z. B. 192.168.1.2:8080",
+        "es": "p. ej. 192.168.1.2:8080"
+      },
       "required": false,
-      "default": "celsius",
+      "default": ""
+    },
+    {
+      "key": "token",
+      "type": "secret",
+      "label": {
+        "en": "Client API token",
+        "fr": "Jeton d'API client",
+        "de": "Client-API-Token",
+        "es": "Token de API de cliente"
+      },
+      "description": {
+        "en": "Recommended: Profile → Client API tokens in RomM, with View ROMs, View platforms and Run tasks. Or fill in the two fields below.",
+        "fr": "Conseillé : Profil → Client API tokens dans RomM, avec View ROMs, View platforms et Run tasks. Sinon, les deux champs ci-dessous.",
+        "de": "Empfohlen: Profil → Client API tokens in RomM, mit View ROMs, View platforms und Run tasks. Sonst die zwei Felder darunter.",
+        "es": "Recomendado: Perfil → Client API tokens en RomM, con View ROMs, View platforms y Run tasks. Si no, los dos campos de abajo."
+      },
+      "required": false
+    },
+    {
+      "key": "username",
+      "type": "string",
+      "label": {
+        "en": "Username",
+        "fr": "Identifiant",
+        "de": "Benutzername",
+        "es": "Usuario"
+      },
+      "description": {
+        "en": "Only without a token: a RomM user (an admin to see and start scans).",
+        "fr": "Seulement sans jeton : un utilisateur RomM (administrateur pour voir et lancer les scans).",
+        "de": "Nur ohne Token: ein RomM-Benutzer (Admin, um Scans zu sehen und zu starten).",
+        "es": "Solo sin token: un usuario de RomM (administrador para ver y lanzar escaneos)."
+      },
+      "required": false,
+      "default": ""
+    },
+    {
+      "key": "password",
+      "type": "secret",
+      "label": {
+        "en": "Password",
+        "fr": "Mot de passe",
+        "de": "Passwort",
+        "es": "Contraseña"
+      },
+      "required": false
+    },
+    {
+      "key": "poll_interval",
+      "type": "select",
+      "label": {
+        "en": "Refresh interval",
+        "fr": "Intervalle de rafraîchissement",
+        "de": "Aktualisierungsintervall",
+        "es": "Intervalo de actualización"
+      },
+      "description": {
+        "en": "How often RomM is read: new games, figures, scans.",
+        "fr": "Fréquence de lecture de RomM : nouveaux jeux, chiffres, scans.",
+        "de": "Wie oft RomM gelesen wird: neue Spiele, Zahlen, Scans.",
+        "es": "Con qué frecuencia se lee RomM: juegos nuevos, cifras, escaneos."
+      },
+      "required": false,
+      "default": "120",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "60",
+          "label": {
+            "en": "1 minute",
+            "fr": "1 minute",
+            "de": "1 Minute",
+            "es": "1 minuto"
+          }
+        },
+        {
+          "value": "120",
+          "label": {
+            "en": "2 minutes",
+            "fr": "2 minutes",
+            "de": "2 Minuten",
+            "es": "2 minutos"
+          }
+        },
+        {
+          "value": "300",
+          "label": {
+            "en": "5 minutes",
+            "fr": "5 minutes",
+            "de": "5 Minuten",
+            "es": "5 minutos"
+          }
+        },
+        {
+          "value": "600",
+          "label": {
+            "en": "10 minutes",
+            "fr": "10 minutes",
+            "de": "10 Minuten",
+            "es": "10 minutos"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the feature names",
+        "fr": "Langue des noms de fonctionnalités",
+        "de": "Sprache der Funktionsnamen",
+        "es": "Idioma de los nombres de funciones"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "Names given to the features when the device is added, and the sentences of the scene actions.",
+        "fr": "Noms donnés aux fonctionnalités à l'ajout de l'appareil, et phrases des actions de scène.",
+        "de": "Namen der Funktionen beim Hinzufügen des Geräts und Sätze der Szenenaktionen.",
+        "es": "Nombres de las funciones al añadir el dispositivo y frases de las acciones de escena."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
+      },
+      "description": {
+        "en": "Reads RomM now and reports what it finds.",
+        "fr": "Lit RomM maintenant et indique ce qu'il trouve.",
+        "de": "Liest RomM sofort und meldet, was es findet.",
+        "es": "Lee RomM ahora e indica lo que encuentra."
+      },
+      "timeout_seconds": 60
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "game_added",
+      "label": {
+        "en": "RomM game added",
+        "fr": "Jeu ajouté dans RomM",
+        "de": "Spiel in RomM hinzugefügt",
+        "es": "Juego añadido en RomM"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "A new game appeared in the RomM library (after a scan or an upload).",
+        "fr": "Un nouveau jeu est apparu dans la bibliothèque RomM (après un scan ou un envoi).",
+        "de": "Ein neues Spiel ist in der RomM-Bibliothek erschienen (nach einem Scan oder Upload).",
+        "es": "Ha aparecido un nuevo juego en la biblioteca de RomM (tras un escaneo o una subida)."
       },
       "fields": [
         {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
+          "key": "platform",
+          "type": "string",
+          "label": {
+            "en": "Platform (empty: any)",
+            "fr": "Plateforme (vide : n'importe laquelle)",
+            "de": "Plattform (leer: beliebig)",
+            "es": "Plataforma (vacío: cualquiera)"
+          },
+          "description": {
+            "en": "Name of the platform exactly as RomM shows it, e.g. Game Boy Advance.",
+            "fr": "Nom de la plateforme, exactement comme RomM l'affiche, ex. Game Boy Advance.",
+            "de": "Name der Plattform, genau wie RomM ihn anzeigt, z. B. Game Boy Advance.",
+            "es": "Nombre de la plataforma, exactamente como lo muestra RomM, p. ej. Game Boy Advance."
+          }
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "name",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Game name",
+            "fr": "Nom du jeu",
+            "de": "Name des Spiels",
+            "es": "Nombre del juego"
+          }
+        },
+        {
+          "key": "platform",
+          "type": "string",
+          "label": {
+            "en": "Platform",
+            "fr": "Plateforme",
+            "de": "Plattform",
+            "es": "Plataforma"
+          }
+        },
+        {
+          "key": "file",
+          "type": "string",
+          "label": {
+            "en": "File name",
+            "fr": "Nom du fichier",
+            "de": "Dateiname",
+            "es": "Nombre del archivo"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Link to the game in RomM",
+            "fr": "Lien vers le jeu dans RomM",
+            "de": "Link zum Spiel in RomM",
+            "es": "Enlace al juego en RomM"
+          }
+        },
+        {
+          "key": "games",
+          "type": "number",
+          "label": {
+            "en": "Games in the library",
+            "fr": "Jeux dans la bibliothèque",
+            "de": "Spiele in der Bibliothek",
+            "es": "Juegos en la biblioteca"
+          }
+        }
+      ]
+    },
+    {
+      "key": "scan_finished",
+      "label": {
+        "en": "RomM scan finished",
+        "fr": "Scan RomM terminé",
+        "de": "RomM-Scan beendet",
+        "es": "Escaneo de RomM terminado"
+      },
+      "description": {
+        "en": "A scan of the library is over, whoever started it (Gladys, RomM, its schedule). Needs an admin account.",
+        "fr": "Un scan de la bibliothèque est terminé, quel que soit son origine (Gladys, RomM, planification). Compte administrateur requis.",
+        "de": "Ein Scan der Bibliothek ist beendet, egal wer ihn gestartet hat (Gladys, RomM, Zeitplan). Braucht ein Admin-Konto.",
+        "es": "Ha terminado un escaneo de la biblioteca, sea cual sea su origen (Gladys, RomM, programación). Requiere una cuenta de administrador."
+      },
+      "variables": [
+        {
+          "key": "scan",
+          "type": "string",
+          "label": {
+            "en": "Scan type (as RomM names it)",
+            "fr": "Type de scan (nom donné par RomM)",
+            "de": "Scan-Typ (wie RomM ihn nennt)",
+            "es": "Tipo de escaneo (como lo nombra RomM)"
+          }
+        },
+        {
+          "key": "new_games",
+          "type": "number",
+          "label": {
+            "en": "New games",
+            "fr": "Nouveaux jeux",
+            "de": "Neue Spiele",
+            "es": "Juegos nuevos"
+          }
+        },
+        {
+          "key": "identified_games",
+          "type": "number",
+          "label": {
+            "en": "Games identified",
+            "fr": "Jeux identifiés",
+            "de": "Erkannte Spiele",
+            "es": "Juegos identificados"
+          }
+        },
+        {
+          "key": "scanned_games",
+          "type": "number",
+          "label": {
+            "en": "Games scanned",
+            "fr": "Jeux scannés",
+            "de": "Gescannte Spiele",
+            "es": "Juegos escaneados"
+          }
+        },
+        {
+          "key": "games",
+          "type": "number",
+          "label": {
+            "en": "Games in the library",
+            "fr": "Jeux dans la bibliothèque",
+            "de": "Spiele in der Bibliothek",
+            "es": "Juegos en la biblioteca"
+          }
+        },
+        {
+          "key": "duration_minutes",
+          "type": "number",
+          "label": {
+            "en": "Duration (minutes)",
+            "fr": "Durée (minutes)",
+            "de": "Dauer (Minuten)",
+            "es": "Duración (minutos)"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "scan_library",
+      "label": {
+        "en": "Scan the RomM library",
+        "fr": "Scanner la bibliothèque RomM",
+        "de": "RomM-Bibliothek scannen",
+        "es": "Escanear la biblioteca de RomM"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "Starts a scan of the library, as the Scan button of RomM does. Needs RomM 5.4 and an admin account.",
+        "fr": "Lance un scan de la bibliothèque, comme le bouton Scan de RomM. Demande RomM 5.4 et un compte administrateur.",
+        "de": "Startet einen Scan der Bibliothek wie die Scan-Schaltfläche von RomM. Braucht RomM 5.4 und ein Admin-Konto.",
+        "es": "Inicia un escaneo de la biblioteca, como el botón Scan de RomM. Requiere RomM 5.4 y una cuenta de administrador."
+      },
+      "timeout_seconds": 60,
       "fields": [
         {
-          "key": "device",
+          "key": "type",
           "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
+          "label": {
+            "en": "What to scan",
+            "fr": "Que scanner",
+            "de": "Was scannen",
+            "es": "Qué escanear"
+          },
+          "required": false,
+          "default": "quick",
+          "options": [
+            {
+              "value": "quick",
+              "label": {
+                "en": "New games only (quick)",
+                "fr": "Nouveaux jeux seulement (rapide)",
+                "de": "Nur neue Spiele (schnell)",
+                "es": "Solo juegos nuevos (rápido)"
+              }
+            },
+            {
+              "value": "unmatched",
+              "label": {
+                "en": "Games without metadata",
+                "fr": "Jeux sans métadonnées",
+                "de": "Spiele ohne Metadaten",
+                "es": "Juegos sin metadatos"
+              }
+            },
+            {
+              "value": "complete",
+              "label": {
+                "en": "Whole library (complete, slow)",
+                "fr": "Toute la bibliothèque (complet, lent)",
+                "de": "Ganze Bibliothek (vollständig, langsam)",
+                "es": "Toda la biblioteca (completo, lento)"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "read_latest",
+      "label": {
+        "en": "Read the latest RomM games",
+        "fr": "Lire les derniers jeux RomM",
+        "de": "Neueste RomM-Spiele lesen",
+        "es": "Leer los últimos juegos de RomM"
+      },
+      "description": {
+        "en": "A sentence for a message or a voice announcement: size of the library and the latest games added.",
+        "fr": "Une phrase pour un message ou une annonce vocale : taille de la bibliothèque et derniers jeux ajoutés.",
+        "de": "Ein Satz für eine Nachricht oder Sprachansage: Größe der Bibliothek und die zuletzt hinzugefügten Spiele.",
+        "es": "Una frase para un mensaje o un aviso de voz: tamaño de la biblioteca y últimos juegos añadidos."
+      },
+      "timeout_seconds": 60,
+      "fields": [
+        {
+          "key": "count",
+          "type": "select",
+          "label": {
+            "en": "Games named in the sentence",
+            "fr": "Jeux cités dans la phrase",
+            "de": "Im Satz genannte Spiele",
+            "es": "Juegos citados en la frase"
+          },
+          "required": false,
+          "default": "3",
+          "options": [
+            {
+              "value": "1",
+              "label": {
+                "en": "1",
+                "fr": "1",
+                "de": "1",
+                "es": "1"
+              }
+            },
+            {
+              "value": "3",
+              "label": {
+                "en": "3",
+                "fr": "3",
+                "de": "3",
+                "es": "3"
+              }
+            },
+            {
+              "value": "5",
+              "label": {
+                "en": "5",
+                "fr": "5",
+                "de": "5",
+                "es": "5"
+              }
+            },
+            {
+              "value": "10",
+              "label": {
+                "en": "10",
+                "fr": "10",
+                "de": "10",
+                "es": "10"
+              }
+            }
+          ]
         }
       ],
       "outputs": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Sentence",
+            "fr": "Phrase",
+            "de": "Satz",
+            "es": "Frase"
+          }
+        },
+        {
+          "key": "games",
+          "type": "number",
+          "label": {
+            "en": "Games",
+            "fr": "Jeux",
+            "de": "Spiele",
+            "es": "Juegos"
+          }
+        },
+        {
+          "key": "platforms",
+          "type": "number",
+          "label": {
+            "en": "Platforms",
+            "fr": "Plateformes",
+            "de": "Plattformen",
+            "es": "Plataformas"
+          }
+        },
+        {
+          "key": "unidentified",
+          "type": "number",
+          "label": {
+            "en": "Games without metadata",
+            "fr": "Jeux sans métadonnées",
+            "de": "Spiele ohne Metadaten",
+            "es": "Juegos sin metadatos"
+          }
+        },
+        {
+          "key": "last_name",
+          "type": "string",
+          "label": {
+            "en": "Last game added",
+            "fr": "Dernier jeu ajouté",
+            "de": "Zuletzt hinzugefügtes Spiel",
+            "es": "Último juego añadido"
+          }
+        },
+        {
+          "key": "last_platform",
+          "type": "string",
+          "label": {
+            "en": "Its platform",
+            "fr": "Sa plateforme",
+            "de": "Seine Plattform",
+            "es": "Su plataforma"
+          }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "library",
+      "label": {
+        "en": "RomM",
+        "fr": "RomM",
+        "de": "RomM",
+        "es": "RomM"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Latest games added, games, platforms, games without metadata, scan in progress; start a scan.",
+        "fr": "Derniers jeux ajoutés, jeux, plateformes, jeux sans métadonnées, scan en cours ; lancer un scan.",
+        "de": "Zuletzt hinzugefügte Spiele, Spiele, Plattformen, ohne Metadaten, laufender Scan; Scan starten.",
+        "es": "Últimos juegos añadidos, juegos, plataformas, sin metadatos, escaneo en curso; lanzar un escaneo."
+      },
+      "icon": "disc",
+      "settings": [
+        {
+          "key": "count",
+          "type": "select",
+          "label": {
+            "en": "Games in the list",
+            "fr": "Jeux dans la liste",
+            "de": "Spiele in der Liste",
+            "es": "Juegos en la lista"
+          },
+          "required": false,
+          "default": "5",
+          "options": [
+            {
+              "value": "3",
+              "label": {
+                "en": "3",
+                "fr": "3",
+                "de": "3",
+                "es": "3"
+              }
+            },
+            {
+              "value": "5",
+              "label": {
+                "en": "5",
+                "fr": "5",
+                "de": "5",
+                "es": "5"
+              }
+            },
+            {
+              "value": "8",
+              "label": {
+                "en": "8",
+                "fr": "8",
+                "de": "8",
+                "es": "8"
+              }
+            }
+          ]
+        },
+        {
+          "key": "show_figures",
+          "type": "boolean",
+          "label": {
+            "en": "Show the figures",
+            "fr": "Afficher les chiffres",
+            "de": "Zahlen anzeigen",
+            "es": "Mostrar las cifras"
+          },
+          "description": {
+            "en": "Games, platforms and games without metadata.",
+            "fr": "Jeux, plateformes et jeux sans métadonnées.",
+            "de": "Spiele, Plattformen und Spiele ohne Metadaten.",
+            "es": "Juegos, plataformas y juegos sin metadatos."
+          },
+          "required": false,
+          "default": true
+        },
+        {
+          "key": "show_scan_button",
+          "type": "boolean",
+          "label": {
+            "en": "Scan button",
+            "fr": "Bouton Scanner",
+            "de": "Scan-Schaltfläche",
+            "es": "Botón Escanear"
+          },
+          "description": {
+            "en": "Starts a quick scan (new games only). Needs RomM 5.4 and an admin account.",
+            "fr": "Lance un scan rapide (nouveaux jeux seulement). Demande RomM 5.4 et un compte administrateur.",
+            "de": "Startet einen schnellen Scan (nur neue Spiele). Braucht RomM 5.4 und ein Admin-Konto.",
+            "es": "Lanza un escaneo rápido (solo juegos nuevos). Requiere RomM 5.4 y una cuenta de administrador."
+          },
+          "required": false,
+          "default": true
+        }
+      ]
     }
   ]
 }

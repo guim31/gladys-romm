@@ -31,16 +31,21 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
+index.js                          SDK wiring only (src/app.js registers every handler)
+src/app.js                        handlers registered before connect(), shared with the tests
+src/hub.js                        timer of the container, readings, scene events, scan, reports
+src/devices.js                    the server device (features, names in four languages)
+src/romm/client.js                REST API of RomM (token or Basic, errors, parsing)
+src/romm/http.js                  the one function that talks to the network
 src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+src/widgets.js                    dashboard widget handler (manifest `widgets`)
+src/texts.js                      every message sent to Gladys, in en/fr/de/es
+src/store.js                      what was announced, under /data (nothing announced twice)
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
+test/                             node --test, against the SDK's fake Gladys and a fake RomM
+test/fixtures/romm/               answers recorded from a real RomM 5.4.1, trimmed
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +75,9 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in English, French, German ("du") and Spanish
+  ("usted"): action messages, manifest texts, widget texts, feature names, and
+  `docs/en.md`, `fr.md`, `de.md`, `es.md`, kept in sync (`test/i18n.test.js`).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -251,3 +257,32 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## RomM (vérifié sur une vraie 5.4.1, 30/10/2026)
+
+- **API REST** sous `/api/` (FastAPI, `openapi.json` à la racine). Deux connexions : jeton client
+  (`rmm_…`, Profil → Client API tokens, à scopes) en `Authorization: Bearer`, ou HTTP Basic
+  (identifiant et mot de passe). Identifiants absents ou faux : **401** `{"detail":"Not authenticated"}`.
+  Compte sans le droit : **403** `{"detail":"Forbidden"}`.
+- `/api/heartbeat` (version dans `SYSTEM.VERSION`) et **`/api/stats` répondent sans connexion** : la lecture
+  des jeux (`/api/roms`, scope `roms.read`) sert donc de contrôle des identifiants.
+- `/api/roms` : `order_by=id&order_dir=desc&limit=10`, réponse `{items, total, …}` ; les index
+  `char_index`, `rom_id_index`, `filter_values` se coupent par `with_…=false`. `matched=false` compte les jeux
+  sans métadonnées. Un jeu a `is_identifying` tant que RomM cherche ses métadonnées : son nom peut changer.
+- `/api/tasks/status` (scope `tasks.run`, admin) : tâches en cours **et finies, gardées 24 h**
+  (`TASK_RESULT_TTL`), du plus récent au plus ancien ; `task_type: "scan"`, `meta.scan_stats`. Les compteurs
+  de RomM sous-comptent parfois (`scanned_roms` 4 sur 5, `new_roms` 1 sur 2 vus sur le banc).
+- **`POST /api/tasks/scan`** (`{"type": "quick"|"unmatched"|"complete"|…}`) n'existe que **depuis RomM
+  5.4.0** (avant : socket.io seulement) ; **409** `{"detail":"… is already running"}` si un scan tourne, 503
+  sans worker, 422 sur un type inconnu.
+- Créer le premier utilisateur sans connexion (assistant d'installation) passe par `POST /api/users` avec
+  le cookie et l'en-tête `x-csrftoken` (sinon 403 « CSRF token verification failed ») ; avec Basic, pas de
+  CSRF.
+- Banc Docker : `rommapp/romm` + `mariadb:11`, bibliothèque `/romm/library/roms/<plateforme>/<fichier>`.
+  RomM échoue au premier démarrage si MariaDB n'est pas prête : le relancer. Fichiers aléatoires suffisants
+  (non identifiés sans clé de métadonnées).
+- **Widget** : une `card-list` en `display: "list"` est plafonnée à **8 éléments** (12 en grille) par le
+  cœur : le réglage propose 3, 5 ou 8.
+- **Requêtes une par une** avec un jeton client : RomM 5.4.1 écrit `last_used_at` du jeton à chaque requête, et
+  des requêtes simultanées se heurtent dans MariaDB (HTTP 500, « Record has changed since last read in table
+  'client_tokens' »), vu sur le banc avec quatre GET en parallèle.
