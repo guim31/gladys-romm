@@ -73,6 +73,24 @@ test('one reading of the recorded answers', async () => {
   });
 });
 
+test('the requests go one at a time (concurrent ones collide in RomM with a token)', async () => {
+  let running = 0;
+  let most = 0;
+  const inner = recorded();
+  const request = async (url, options) => {
+    running += 1;
+    most = Math.max(most, running);
+    await new Promise((resolve) => setImmediate(resolve));
+    try {
+      return await inner(url, options);
+    } finally {
+      running -= 1;
+    }
+  };
+  await client(request).read();
+  assert.equal(most, 1);
+});
+
 test('the token goes in a Bearer header, a password in Basic, never in the URL', async () => {
   const request = recorded();
   await client(request).read();

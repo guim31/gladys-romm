@@ -8,7 +8,7 @@
 //   - the username and password of a RomM user, sent as HTTP Basic.
 // Never in the URL, never in the logs.
 //
-// A reading is five small GETs: the heartbeat (version, no sign-in), the
+// A reading is five small GETs, one at a time: the heartbeat (version, no sign-in), the
 // statistics, the ten newest games (by id), the count of games without
 // metadata, and the task list (scans). The task list needs the `tasks.run`
 // scope (an admin): refused, the reading goes on without the scans.
@@ -192,12 +192,15 @@ export class RommClient {
    */
   async read() {
     const { version } = await this.heartbeat();
-    const [stats, latest, unidentified, tasks] = await Promise.all([
-      this.call('/api/stats'),
-      this.call(`/api/roms?order_by=id&order_dir=desc&limit=${LATEST_SIZE}&${LIST}`),
-      this.call(`/api/roms?matched=false&limit=1&${LIST}`),
-      this.tasks(),
-    ]);
+    // One request at a time: RomM 5.4.1 writes `last_used_at` of a client token
+    // on every request, and concurrent ones collide in MariaDB (HTTP 500,
+    // "Record has changed since last read in table 'client_tokens'").
+    const stats = await this.call('/api/stats');
+    const latest = await this.call(
+      `/api/roms?order_by=id&order_dir=desc&limit=${LATEST_SIZE}&${LIST}`,
+    );
+    const unidentified = await this.call(`/api/roms?matched=false&limit=1&${LIST}`);
+    const tasks = await this.tasks();
     return {
       version,
       platforms: int(stats?.PLATFORMS),

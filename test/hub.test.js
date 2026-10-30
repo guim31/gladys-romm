@@ -380,3 +380,22 @@ test('Test the connection during a reconfiguration answers a message, not an err
   const report = await w.hub.testConnection();
   assert.equal(report.fr, 'RomM ne répond pas.');
 });
+
+test('an empty list of games while RomM counts some does not seed again', async (t) => {
+  const w = await world(t);
+  const roms = w.romm.roms;
+  w.romm.roms = [];
+  const handle = w.romm.handle.bind(w.romm);
+  w.romm.handle = (url, options) => {
+    const answer = handle(url, options);
+    if (new URL(url).pathname === '/api/stats') {
+      return { ...answer, body: JSON.stringify({ ...JSON.parse(answer.body), ROMS: 3 }) };
+    }
+    return answer;
+  };
+  await w.hub.pollAll();
+  w.romm.roms = roms;
+  w.romm.handle = handle;
+  await w.hub.pollAll();
+  assert.deepEqual(events(w, 'game_added'), [], 'the old games are not announced');
+});

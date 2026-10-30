@@ -325,7 +325,9 @@ export class RommHub {
     let finished = [];
 
     const maxId = Math.max(0, ...reading.latest.map((rom) => rom.id));
-    if (saved.seeded && maxId < saved.seedId) {
+    // An empty list while RomM still counts games is a glitch, not a new database.
+    const emptyGlitch = reading.latest.length === 0 && reading.games > 0;
+    if (saved.seeded && maxId < saved.seedId && !emptyGlitch) {
       // The ids went back (RomM reinstalled with a new database, or the newest
       // games deleted): start again from what is there, or the new games
       // numbered below the old ones would never be announced.

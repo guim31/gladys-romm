@@ -283,3 +283,6 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
   (non identifiés sans clé de métadonnées).
 - **Widget** : une `card-list` en `display: "list"` est plafonnée à **8 éléments** (12 en grille) par le
   cœur : le réglage propose 3, 5 ou 8.
+- **Requêtes une par une** avec un jeton client : RomM 5.4.1 écrit `last_used_at` du jeton à chaque requête, et
+  des requêtes simultanées se heurtent dans MariaDB (HTTP 500, « Record has changed since last read in table
+  'client_tokens' »), vu sur le banc avec quatre GET en parallèle.
